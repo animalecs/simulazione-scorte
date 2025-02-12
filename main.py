@@ -102,7 +102,9 @@ app = dash.Dash(__name__)
 
 app.layout = html.Div([
     html.H1("Simulazione di Riordino Magazzino"),
-    html.P("Questa dashboard mostra l'andamento delle scorte in base a diverse strategie di riordino. Le formule utilizzate sono:"),
+    html.P("Questa dashboard mostra l'andamento delle scorte in base a diverse strategie di riordino."),
+    html.P("In tutte le strategie non mandiamo un altro ordine se il precedente non è arrivato."),
+    html.P("Le formule utilizzate sono:"),
     html.Ul([
         html.Li("Punto di Riordino: media della domanda negli ultimi 30 giorni moltiplicata per il lead time."),
         html.Li("Stock di Sicurezza: Z-score * deviazione standard della domanda * radice quadrata del lead time."),
@@ -110,8 +112,7 @@ app.layout = html.Div([
     html.P("Le tre strategie simulate sono:", style={'font-weight': 'bold'}),
     html.Ul([
         html.Li("Riordino ogni giovedì se le scorte sono sotto la soglia di riordino."),
-        # html.Li("Riordino immediato se le scorte sono sotto la soglia di riordino."),
-        html.Li("Riordino immediato se le scorte scendono sotto il livello di Safety Stock calcolato.")
+        html.Li("Riordino immediato se le scorte scendono sotto il livello di Safety Stock calcolato."),
     ]),
     dcc.Dropdown(
         id='product-dropdown',
@@ -119,13 +120,20 @@ app.layout = html.Div([
         value=unique_products[0] if unique_products else None,
         clearable=False
     ),
-    html.Div([
-        dcc.Graph(id='simulation-graph-1'),
-        # dcc.Graph(id='simulation-graph-2'),
-        dcc.Graph(id='simulation-graph-3'),
-    ]),
+    
+    # Add Loading Component
+    dcc.Loading(
+        id="loading-1",
+        type="default",  # Options: "default", "circle", "dot"
+        children=[
+            dcc.Graph(id='simulation-graph-1'),
+            # dcc.Graph(id='simulation-graph-2'),
+            dcc.Graph(id='simulation-graph-3'),
+        ]
+    ),
+    
     html.Hr(),
-    html.P("Codice sviluppato da Alex Mina - [GitHub](https://github.com/alexmina)", style={'text-align': 'center'})
+    html.P("Codice sviluppato da Alex Mina - [GitHub](https://github.com/animalecs)", style={'text-align': 'center'})
 ])
 
 server = app.server  # Necessario per Railway
@@ -171,11 +179,17 @@ def update_graphs(selected_product):
                 trace.line.width = 2  # Keep stock and demand more visible
 
         # Stockout days annotation
+        # Stockout days annotation (bold & highlighted)
         stockout_days = (sim['stock'] == 0).sum()
         fig.add_annotation(
             x=sim['date'].iloc[-1], y=sim['stock'].iloc[-1],
-            text=f"Stockout Days: {stockout_days}", showarrow=False,
-            font=dict(color='red', size=14)
+            text=f"<b>Stockout Days: {stockout_days}</b>",
+            showarrow=False,
+            font=dict(color='white', size=16, family="Arial Black"),
+            align="center",
+            bgcolor="red",
+            bordercolor="black",
+            borderwidth=2
         )
 
         return fig
@@ -187,4 +201,4 @@ def update_graphs(selected_product):
     )
 
 if __name__ == "__main__":
-    app.run_server(debug=True, host="0.0.0.0", port=5000)
+    app.run_server(debug=True, host="0.0.0.0", port=5001)
