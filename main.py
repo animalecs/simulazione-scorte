@@ -164,7 +164,7 @@ def update_graphs(selected_product):
     sim3_filtered = sim3[sim3['date'] >= start_date]
     
     # Create separate figures for each strategy
-    def create_figure(sim, title):
+    def create_figure(sim, title, include_safety_stock=True):
         fig = px.line(sim, x='date', y=['stock', 'demand', 'reorder_point', 'safety_stock'], title=f"{title}")
 
         # Customize line styles
@@ -172,7 +172,7 @@ def update_graphs(selected_product):
             if trace.name == 'reorder_point':
                 trace.line.dash = 'dash'
                 trace.line.width = 1
-            elif trace.name == 'safety_stock':
+            elif trace.name == 'safety_stock' and include_safety_stock:
                 trace.line.dash = 'dash'
                 trace.line.width = 1
             else:
@@ -195,7 +195,7 @@ def update_graphs(selected_product):
         return fig
     
     return (
-        create_figure(sim1_filtered, "Riordino calendarizzato giovedì (no safety stock)"),
+        create_figure(sim1_filtered, "Riordino calendarizzato giovedì (no safety stock)", False),
        #create_figure(sim2_filtered, "Immediate Reorders"),
         create_figure(sim3_filtered, "Riordino calendarizzato giovedì o sotto scorta sicurezza")
     )
