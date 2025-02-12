@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 import plotly.express as px
 import dash
+import plotly.graph_objects as go
 from dash import dcc, html, Input, Output
 
 # Load data
@@ -103,6 +104,7 @@ app = dash.Dash(__name__)
 app.layout = html.Div([
     html.H1("Simulazione di Riordino Magazzino"),
     html.P("Questa dashboard mostra l'andamento delle scorte in base a diverse strategie di riordino."),
+    html.P("I giovedì sono segnati con una X sul grafico."),
     html.P("In tutte le strategie non mandiamo un altro ordine se il precedente non è arrivato."),
     html.P("Le formule utilizzate sono:"),
     html.Ul([
@@ -183,6 +185,24 @@ def update_graphs(selected_product):
                 trace.line.width = 1
             else:
                 trace.line.width = 2  # Keep stock and demand more visible
+
+        # Generate ALL Thursdays within the dataset's time range
+        start_date = sim['date'].min()
+        end_date = sim['date'].max()
+        
+        # Create a list of all Thursdays between start_date and end_date
+        all_thursdays = pd.date_range(start=start_date, end=end_date, freq='W-THU')
+
+        # 🔹 Add "X" markers on all Thursdays
+        fig.add_trace(go.Scatter(
+            x=all_thursdays,
+            y=[sim['stock'].min()] * len(all_thursdays),  # Place markers at the bottom
+            mode='text',
+            text="X",
+            textposition="bottom center",
+            marker=dict(color="red", size=12),
+            showlegend=False
+        ))
 
         # Stockout days annotation
         # Stockout days annotation (bold & highlighted)
