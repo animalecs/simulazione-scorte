@@ -165,7 +165,13 @@ def update_graphs(selected_product):
     
     # Create separate figures for each strategy
     def create_figure(sim, title, include_safety_stock=True):
-        fig = px.line(sim, x='date', y=['stock', 'demand', 'reorder_point', 'safety_stock'], title=f"{title}")
+        y_columns = ['stock', 'demand', 'reorder_point']
+        
+        # Remove safety_stock from Chart 1
+        if include_safety_stock:
+            y_columns.append('safety_stock')
+        
+        fig = px.line(sim, x='date', y=y_columns, title=f"{title}")
 
         # Customize line styles
         for trace in fig.data:
